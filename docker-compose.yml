@@ -1,0 +1,45 @@
+version : '3'
+
+services:
+  app:
+    depends_on:
+      - mysqldb
+    build: ./docker-app
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - 1337:1337
+    environment:
+      - DB_HOST=mysqldb
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+    stdin_open: true
+    tty: true
+  mysqldb:
+    image: mysql:latest
+    container_name: dev_mysql
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: default_schema
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: dev_pma
+    depends_on:
+      - mysqldb
+    links:
+      - mysqldb
+    environment:
+      PMA_HOST: mysqldb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8183:80
+
+volumes: 
+  db:
